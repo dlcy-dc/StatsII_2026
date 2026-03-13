@@ -120,7 +120,7 @@ exp(0.05309) -> # 1.054525 -> 5%
 exp(0.71911) -> #doubles
 
 # income is integer var - 1 unit increas in family income is associated with 0.05 logg odds increas in respondent getting highschool grad holding others constant.
-
+  
 
 # (b) The logistic regression in the previous problem assumes that the partial relationship between the log-odds of high-school graduation and number of siblings is linear. 
 # Test for nonlinearity by fitting a model that treats nsibs as a factor, performing an appropriate likelihood-ratio test. 
@@ -130,3 +130,40 @@ exp(0.71911) -> #doubles
   
 # effect of logg odds on y
 
+graduation$nsibs_f <- factor(graduation$nsibs)
+
+  full2 <- glm(hsgrad ~ nonwhite + mhs + fhs + income + asvab + nsibs_f + intact,
+              data = graduation,
+              family = binomial(link = "logit")
+  )
+summary(full2) 
+anova(full, full2, test = "LRT")
+anova(full2, full, test = "LRT")
+
+#linearity assumption of nsibs did not improve by turning to factor
+# high standard errors - coefficient is not estimated properly - typically number of cases
+
+graduation_clean <- subset(graduation, nsibs >= 0) # removing 3
+graduation_clean$nsibs_cat <- cut(
+  graduation_clean$nsibs,
+  breaks = c(-1, 1, 3, 5, 10, 20),
+  labels = c("0-1", "2-3", "4-5", "6-10", "11+")
+)
+str(graduation_clean)
+
+table(graduation_clean$nsibs_cat, graduation_clean$nsibs)
+
+full3 <- glm(hsgrad ~ nonwhite + mhs + fhs + income + asvab + nsibs_cat + intact,
+             data = graduation_clean,
+             family = binomial
+)
+summary(full3)
+
+full_new <- glm(hsgrad ~ nonwhite + mhs + fhs + income + asvab + nsibs + intact,
+             data = graduation_clean,
+             family = binomial
+)
+summary(full)
+
+anova(full_new, full3, test = "LRT")
+# linear relationship holds true - its just fine as it is
