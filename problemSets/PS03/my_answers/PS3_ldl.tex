@@ -1,0 +1,334 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{graphicx,textcomp}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{fullpage}
+\usepackage{color}
+\usepackage[reqno]{amsmath}
+\usepackage{amsthm}
+\usepackage{fancyvrb}
+\usepackage{amssymb,enumerate}
+\usepackage[all]{xy}
+\usepackage{endnotes}
+\usepackage{lscape}
+\newtheorem{com}{Comment}
+\usepackage{float}
+\usepackage{hyperref}
+\newtheorem{lem} {Lemma}
+\newtheorem{prop}{Proposition}
+\newtheorem{thm}{Theorem}
+\newtheorem{defn}{Definition}
+\newtheorem{cor}{Corollary}
+\newtheorem{obs}{Observation}
+\usepackage[compact]{titlesec}
+\usepackage{dcolumn}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usepackage{multirow}
+\usepackage{xcolor}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+\definecolor{light-gray}{gray}{0.65}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{minted}
+\usepackage[parfill]{parskip}
+\usepackage[T1]{fontenc}
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=mystyle}
+\newcommand{\Sref}[1]{Section~\ref{#1}}
+\newtheorem{hyp}{Hypothesis}
+
+\title{Problem Set 3}
+\date{Due: March 25, 2026}
+\author{Applied Stats II}
+
+
+\begin{document}
+	\maketitle
+	\section*{Instructions}
+	\begin{itemize}
+		\item Please show your work! You may lose points by simply writing in the answer. If the problem requires you to execute commands in \texttt{R}, please include the code you used to get your answers. Please also include the \texttt{.R} file that contains your code. If you are not sure if work needs to be shown for a particular problem, please ask.
+		\item Your homework should be submitted electronically on GitHub in \texttt{.pdf} form.
+		\item This problem set is due before 23:59 on Wednesday March 25, 2026. No late assignments will be accepted.
+	\end{itemize}
+	
+	\vspace{.25cm}
+	\section*{Question 1}
+	\vspace{.25cm}
+	\noindent We are interested in how governments' management of public resources impacts economic prosperity. Our data come from \href{https://www.researchgate.net/profile/Adam_Przeworski/publication/240357392_Classifying_Political_Regimes/links/0deec532194849aefa000000/Classifying-Political-Regimes.pdf}{Alvarez, Cheibub, Limongi, and Przeworski (1996)} and is labelled \texttt{gdpChange.csv} on GitHub. The dataset covers 135 countries observed between 1950 or the year of independence or the first year forwhich data on economic growth are available ("entry year"), and 1990 or the last year for which data on economic growth are available ("exit year"). The unit of analysis is a particular country during a particular year, for a total $>$ 3,500 observations. 
+	
+	\begin{itemize}
+		\item
+		Response variable: 
+		\begin{itemize}
+			\item \texttt{GDPWdiff}: Difference in GDP between year $t$ and $t-1$. Possible categories include: "positive", "negative", or "no change"
+		\end{itemize}
+		\item
+		Explanatory variables: 
+		\begin{itemize}
+			\item
+			\texttt{REG}: 1=Democracy; 0=Non-Democracy
+			\item
+			\texttt{OIL}: 1=if the average ratio of fuel exports to total exports in 1984-86 exceeded 50\%; 0= otherwise
+		\end{itemize}
+		
+	\end{itemize}
+	\newpage
+	\noindent Please answer the following questions:
+	
+	\begin{enumerate}
+		\item Construct and interpret an unordered multinomial logit with \texttt{GDPWdiff} as the output and "no change" as the reference category, including the estimated cutoff points and coefficients.
+		\item Construct and interpret an ordered multinomial logit with \texttt{GDPWdiff} as the outcome variable, including the estimated cutoff points and coefficients.
+		
+		
+	\end{enumerate}
+	
+	\newpage
+	\section*{Answer 1}
+	\vspace{.25cm}
+	
+	\subsection{Part 1}
+	Before creating the multinomial logit I ensure the data is appropriately structured. Recoding the GDPWdiff variable into a factor with the three levels specified, with no change being set as the reference category.
+	
+	I additionally turn the OIL and REG variables into labelled factors. I ensure the data is limited to only these variables, while additionally including country and year variables to all for future categorisation if needed.
+	
+	\textbf{Wrangling Code}
+	\begin{verbatim}
+		gdp_data <- gdp_data %>%
+		select(CTYNAME, YEAR, GDPWdiff, REG, OIL) %>%
+		mutate(GDPWdiff = case_when(
+		GDPWdiff > 0  ~ "positive",
+		GDPWdiff < 0  ~ "negative",
+		GDPWdiff == 0 ~ "no change"),
+		GDPWdiff = factor(GDPWdiff, levels = c("no change", "negative", "positive")),
+		REG = factor(REG, levels = c(0, 1), labels = c("Non-Democracy", "Democracy")),
+		OIL = factor(OIL, levels = c(0, 1), labels = c("No", "Yes")))
+		str(gdp_data)
+		
+	\end{verbatim}
+	
+	Next I run the model and extract the relevant p-values.
+	
+	\textbf{Coding process}
+	\begin{verbatim}
+		#run model
+		model1_unordered <- multinom(GDPWdiff ~ REG + OIL, data = gdp_data)
+		summary(model1_unordered)
+		
+		#get p values
+		z <- summary(model1_unordered)$coefficients/summary(model1_unordered)$standard.errors
+		p <- (1 - pnorm(abs(z), 0, 1)) * 2
+		p
+	\end{verbatim}
+	
+	
+	\begin{table}[!htbp] \centering 
+		\caption{Unordered Multinomial Logit: GDP Change} 
+		\label{} 
+		\begin{tabular}{@{\extracolsep{5pt}}lcc} 
+			\\[-1.8ex]\hline 
+			\hline \\[-1.8ex] 
+			& \multicolumn{2}{c}{\textit{Dependent variable:}} \\ 
+			\cline{2-3} 
+			\\[-1.8ex] & GDP Change (Ref: No Change) & positive \\ 
+			& Negative & Positive \\ 
+			\\[-1.8ex] & (1) & (2)\\ 
+			\hline \\[-1.8ex] 
+			Democracy & 1.379$^{*}$ & 1.769$^{**}$ \\ 
+			& (0.769) & (0.767) \\ 
+			& & \\ 
+			Oil Exporter & 4.784 & 4.576 \\ 
+			& (6.885) & (6.885) \\ 
+			& & \\ 
+			Constant & 3.805$^{***}$ & 4.534$^{***}$ \\ 
+			& (0.271) & (0.269) \\ 
+			& & \\ 
+			\hline \\[-1.8ex] 
+			Akaike Inf. Crit. & 4,690.770 & 4,690.770 \\ 
+			\hline 
+			\hline \\[-1.8ex] 
+			\textit{Note:}  & \multicolumn{2}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+		\end{tabular} 
+	\end{table} 
+	\vspace{.25cm}
+	\textbf{Interpreting results}
+	
+	Table 1 illustrates the outcome of the multinomial logit. As the reference category was "no change" this means that the coefficients for Positive and Negative GDP growth should be interpreted as the log odds of positive/negative gdp growth given X compared to no change in GDP. The relevant cutoffs are straightforward, positive GDP growth places an observation in the positive category, negative GDP growth in the negative category, no change in GDP growth places the observation in no change. 
+	
+	Being a democracy, holding OIL constant, is associated with an increase in the log odds of negative and positive GDP growth. While both results are statistically significant when significance is limited to p<0.1, the result is only significant at p<0.05 for positive. Thus it can be argued that the coefficient for negative is not statistically significant, therefore we cannot reject the null hypothesis. However, we can for positive, thus it can be argued that being a democracy is associated with an increase in the log odds of GDP growth by 1.769 compared to no change in GDP growth, when holding being an oil exporter constant.
+	
+	When evaluating whether oil exporting status neither coefficients are statistically significant and both have relateively large standard errors. This may indicate significant gaps in the data - therefore we cannot make a clear claim about it, other than not rejecting the null hypothesis that being an oil exporter is not associated with a change in the log odds of positive or negative GDP growth, holding regime type constant,  relative to no change.
+	
+	\vspace{.25cm}
+	\subsection{Part 2}
+	\vspace{.25cm}
+	The ordered multinomial logit may present differing results, there is a clear order to the GDPWdiff variable: negative -> no change -> positive. This necessitates an adjustment to the variable from the previous analysis, which placed no change as the reference category.
+	
+	\textbf{Coding process}
+	\begin{verbatim}
+		# create ordered GDPwdiff appropriate for the ordered multinomial logit.
+		gdp_data <- gdp_data %>%
+		mutate(GDPWdiffo = factor(GDPWdiff, 
+		levels = c("negative", "no change", "positive"), 
+		ordered = TRUE))
+		
+		# run ordered model
+		model1_ordered <- polr(GDPWdiffo ~ REG + OIL, data = gdp_data, Hess = TRUE)
+		summary(model1_ordered)
+		
+		# extract p-values
+		z2 <- summary(model1_ordered)$coefficients[,3]
+		p2 <- (1 - pnorm(abs(z2), 0, 1)) * 2
+		p2
+	\end{verbatim}
+	\begin{table}[!htbp] \centering 
+		\caption{Ordered Multinomial Logit: GDP Change} 
+		\label{} 
+		\begin{tabular}{@{\extracolsep{5pt}}lc} 
+			\\[-1.8ex]\hline 
+			\hline \\[-1.8ex] 
+			& \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+			\cline{2-2} 
+			\\[-1.8ex] & GDP Change \\ 
+			\hline \\[-1.8ex] 
+			Democracy & 0.398$^{***}$ \\ 
+			& (0.075) \\ 
+			& \\ 
+			Oil Exporter & $-$0.199$^{*}$ \\ 
+			& (0.116) \\ 
+			& \\ 
+			\hline \\[-1.8ex] 
+			Observations & 3,721 \\ 
+			\hline 
+			\hline \\[-1.8ex] 
+			\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+		\end{tabular} 
+	\end{table} 
+	\vspace{.25cm}
+	\textbf{Interpreting results}
+	
+	Table 2 shows the output of the ordered regression. Here on average the log odds of being in a higher GDP category (i.e. no change and positive) when a country is a democracy, but holding oil exporting status constant, increases by 0.398 and is highly statistically significant with a p value of 0.0000001157687. Being an Oil exporter is on average associated with a change in the log odds of being in a higher GDP category by -0.199, holding regime type constant. However, it is only statistically significant when p<0.1, not the typical p<0.05, therefore we cannot reject the null that being an oil exporter does not, on average, influence the log odds of being in a higher GDP category holding regime type constant.
+	
+	The cut-offs indicate the threshold where an observation crosses between categories, the cut-offs represent when the log odds of being in either categoryare effectively equal. They are: -0.731, as thecut-off between negative and no change; and -0.711 as the  cut-off between no change and positive. That both are relatively close may indicate that there is a very limited number of cases of no change observations - which one might expect given the sensitivity of GDP, observing no change would be abnormal.
+	
+	\newpage
+	\section*{Question 2} 
+	\vspace{.25cm}
+	
+	\noindent Consider the data set \texttt{MexicoMuniData.csv}, which includes municipal-level information from Mexico. The outcome of interest is the number of times the winning PAN presidential candidate in 2006 (\texttt{PAN.visits.06}) visited a district leading up to the 2009 federal elections, which is a count. Our main predictor of interest is whether the district was highly contested, or whether it was not (the PAN or their opponents have electoral security) in the previous federal elections during 2000 (\texttt{competitive.district}), which is binary (1=close/swing district, 0="safe seat"). We also include \texttt{marginality.06} (a measure of poverty) and \texttt{PAN.governor.06} (a dummy for whether the state has a PAN-affiliated governor) as additional control variables. 
+	
+	\begin{enumerate}
+		\item [(a)]
+		Run a Poisson regression because the outcome is a count variable. Is there evidence that PAN presidential candidates visit swing districts more? Provide a test statistic and p-value.
+		
+		\item [(b)]
+		Interpret the \texttt{marginality.06} and \texttt{PAN.governor.06} coefficients.
+		
+		\item [(c)]
+		Provide the estimated mean number of visits from the winning PAN presidential candidate for a hypothetical district that was competitive (\texttt{competitive.district}=1), had an average poverty level (\texttt{marginality.06} = 0), and a PAN governor (\texttt{PAN.governor.06}=1).
+		
+	\end{enumerate}
+	
+	
+	
+	\newpage
+	\section*{Answer 1}
+	\vspace{.25cm}
+	
+	\subsection{Part 1}
+	First I check the data, which appears to be in order, I add labels to the levels of PAN.governor.06 and competitive.district for the easy of interpreting output and turn them into factors. I then run a Poisson regression to test for the three questions.
+	
+	\textbf{Code used}
+	\begin{verbatim}
+		# adjusting dummies for clarity
+		mexico_elections <- mexico_elections %>%
+		mutate(
+		competitive.district = factor(competitive.district, 
+		levels = c(0, 1), 
+		labels = c("Safe Seat", "Swing District")),
+		PAN.governor.06 = factor(PAN.governor.06, 
+		levels = c(0, 1), 
+		labels = c(" Non-PAN Affiliated", "PAN Affiliated")))
+		
+		#run poisson
+		model2_poisson <- glm(PAN.visits.06 ~ competitive.district + marginality.06 + PAN.governor.06,
+		data = mexico_elections,
+		family = poisson)
+		
+		summary(model2_poisson)
+	\end{verbatim}
+	
+	
+	\begin{table}[!htbp] \centering 
+		\caption{Poisson Regression: PAN Presidential Candidate Visits} 
+		\label{} 
+		\begin{tabular}{@{\extracolsep{5pt}}lc} 
+			\\[-1.8ex]\hline 
+			\hline \\[-1.8ex] 
+			& \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+			\cline{2-2} 
+			\\[-1.8ex] & PAN Visits (2006) \\ 
+			\hline \\[-1.8ex] 
+			Swing District & $-$0.081 \\ 
+			& (0.171) \\ 
+			& \\ 
+			Marginality & $-$2.080$^{***}$ \\ 
+			& (0.117) \\ 
+			& \\ 
+			PAN Governor & $-$0.312$^{*}$ \\ 
+			& (0.167) \\ 
+			& \\ 
+			Constant & $-$3.810$^{***}$ \\ 
+			& (0.222) \\ 
+			& \\ 
+			\hline \\[-1.8ex] 
+			Observations & 2,407 \\ 
+			Log Likelihood & $-$645.606 \\ 
+			Akaike Inf. Crit. & 1,299.213 \\ 
+			\hline 
+			\hline \\[-1.8ex] 
+			\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+		\end{tabular} 
+	\end{table}
+	
+	\vspace{.25cm}
+	\textbf{Interpreting results}
+	\vspace{.25cm}
+	
+	\textbf{Part 1}
+	
+	Regarding the question whether the PAN presidential candidate visited swing districts more, the coefficient of -0.081, a test statistic of -0.477, and a p value of 0.634. The coefficient is negative but the p value is not significant, thus we cannot reject the null. There is therefore no evidence, based off the data provided, that PAN presidential candidate visted swing districts more than non-swing distrticts.
+	
+	\textbf{Part 2}
+	For marginality.06 the coefficient was -2.08, while the test statistic was -17.73, with a p value of less than 0.0000000000000002. The large test statistic and the very small p value suggest that this finding is highly significant.  It suggest that a one unit increase in poverty is associated with a decrease of -2.08 in the log expected number of visits by a PAN presidential candidate holding all else constant.
+	
+	For PAN.governor.06 the coefficient was -0.31, while the test statistic was --1.87, with a p value of less than 0.062. Depending on ones metrics, this is a marginally significant finding, however, the p value is not less than 0.05 thus this paper argues it is not. Thus we cannot reject the null hypothesis.
+	
+	
+\end{document}
