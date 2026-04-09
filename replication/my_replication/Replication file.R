@@ -13,7 +13,7 @@
 
 cat( '\14' )
 rm( list = ls( ))
-pkgs <- c( 'dplyr' , 'magrittr' , 'ggplot2')
+pkgs <- c( 'dplyr' , 'magrittr' , 'ggplot2', 'tidyverse')
 lapply( pkgs , library , c = TRUE )
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
