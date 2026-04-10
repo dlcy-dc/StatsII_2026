@@ -1,0 +1,234 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{graphicx,textcomp}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{fullpage}
+\usepackage{color}
+\usepackage[reqno]{amsmath}
+\usepackage{amsthm}
+\usepackage{fancyvrb}
+\usepackage{amssymb,enumerate}
+\usepackage[all]{xy}
+\usepackage{endnotes}
+\usepackage{lscape}
+\newtheorem{com}{Comment}
+\usepackage{float}
+\usepackage{hyperref}
+\newtheorem{lem} {Lemma}
+\newtheorem{prop}{Proposition}
+\newtheorem{thm}{Theorem}
+\newtheorem{defn}{Definition}
+\newtheorem{cor}{Corollary}
+\newtheorem{obs}{Observation}
+\usepackage[compact]{titlesec}
+\usepackage{dcolumn}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usepackage{multirow}
+\usepackage{xcolor}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+\definecolor{light-gray}{gray}{0.65}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{color}
+\usepackage[parfill]{parskip}
+
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=mystyle}
+\newcommand{\Sref}[1]{Section~\ref{#1}}
+\newtheorem{hyp}{Hypothesis}
+
+\title{Problem Set 4}
+\date{Due: April 10, 2026}
+\author{Applied Stats II}
+
+
+\begin{document}
+	\maketitle
+	\section*{Instructions}
+	\begin{itemize}
+		\item Please show your work! You may lose points by simply writing in the answer. If the problem requires you to execute commands in \texttt{R}, please include the code you used to get your answers. Please also include the \texttt{.R} file that contains your code. If you are not sure if work needs to be shown for a particular problem, please ask.
+		\item Your homework should be submitted electronically on GitHub in \texttt{.pdf} form.
+		\item This problem set is due before 23:59 on Friday April 10, 2026. No late assignments will be accepted.
+		
+	\end{itemize}
+	
+	\vspace{.25cm}
+	\section*{Question 1}
+	\vspace{.25cm}
+	\noindent We're interested in modeling the historical causes of child mortality. We have data from 26855 children born in Skellefteå, Sweden from 1850 to 1884. Using the "child" dataset in the \texttt{eha} library, fit a Cox Proportional Hazard model using mother's age and infant's gender as covariates. Present and interpret the output.
+	
+	
+	Being a woman is associated with a change in the hazard rate of XX by X
+	
+	A unit increase in mothers age is associated with a xx change in the log odds of X occuring
+	
+	\section*{Question 2}
+	\vspace{.25cm}
+	\noindent We want to estimate how the amount of damage caused by a disaster relates to (1) whether disaster relief is provided and (2) the amount of relief that is provided  conditional on a donation occurring when a disaster hits a given country. Estimate a Heckman selection model using the \texttt{disasters\_response} data on \href{https://raw.githubusercontent.com/ASDS-TCD/StatsII_2026/refs/heads/main/datasets/disaster_response.csv}{GitHub} in which \texttt{binContribution} is the outcome for the selection equation, and \texttt{originalContributionMillionUSDLogged} is the outcome for the second equation. Use \texttt{occurrences  + deathsEM + normalizedDamageEMLogged} as your input variables for both equations. Present and interpret the output.
+	
+	\newpage
+	
+	\section*{Answer 1}
+	\vspace{.25cm}
+	
+	To model the association between age of the mother and the sex of the child, and child mortality, a cox proportional hazard model (chpm) is an appropriate model. It allows one to capture the hazard rate, the risk of a child dying at any given point, among children who have survived at that point. In doing so it allows one to estimate the relationship between the covariates and hazard rate, i.e. how a mother's age at the time of birth may be associated with a change in the risk of child mortality. Table 1 illustrates the output of the chpm.
+	
+	
+	
+	
+	\begin{table}[!htbp] \centering 
+		\caption{Hazard Rate Of Child Mortality: Mother's Age and Sex of Child} 
+		\label{} 
+		\begin{tabular}{@{\extracolsep{5pt}}lc} 
+			\\[-1.8ex]\hline 
+			\hline \\[-1.8ex] 
+			& \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+			\cline{2-2} 
+			\\[-1.8ex] & Hazard rate of child mortatlity \\ 
+			\hline \\[-1.8ex] 
+			Mother's Age & 0.008$^{***}$ \\ 
+			& (0.002) \\ 
+			& \\ 
+			Sex of Child: Female & $-$0.082$^{***}$ \\ 
+			& (0.027) \\ 
+			& \\ 
+			\hline \\[-1.8ex] 
+			Observations & 26,574 \\ 
+			R$^{2}$ & 0.001 \\ 
+			Max. Possible R$^{2}$ & 0.986 \\ 
+			Log Likelihood & $-$56,503.480 \\ 
+			Wald Test & 22.520$^{***}$ (df = 2) \\ 
+			LR Test & 22.518$^{***}$ (df = 2) \\ 
+			Score (Logrank) Test & 22.530$^{***}$ (df = 2) \\ 
+			\hline 
+			\hline \\[-1.8ex] 
+			\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+		\end{tabular} 
+	\end{table}
+	
+	The findings in Table 1 return two statistically significant results regarding the age of the mother at birth and the sex of the child.
+	
+	First, it suggests that, holding the sex of the child constant, each unit increase in the mother's age at birth is on average associated with an increase in the log baseline hazard rate of 0.008. When the result is exponentiated, to find the hazard rate itself, the coefficient is 1.007646 or approximately 0.77 percent. Therefore, holding the sex of the child constant, each additional year older a mother is at the time of birth is associated with an increase in the hazard rate of 0.77 percent. This number is multiplicative, meaning it multiplies each year by 0.77 percent. The finding is additionally statistically significant. This suggests that each year older mother a mother is, is associated with an increase in the risk of child mortality - specifically we cannot reject the Null hypothesis that it has no relationship.
+	
+	Second, it suggests that, holding the mother's age at birth constant, a child being born female is on average associated with a decrease in the log baseline hazard rate of -0.082. When the result is exponentiated, to find the hazard rate itself, the coefficient is 0.921074 or a reduction of 0.078926, approximately 7.89 percent. Therefore, holding the mother's age at birth constant, being born female is associated with a decrease in the hazard rate of 7.89 percent. The finding is additionally statistically significant. This suggests that being born female is associated with a decrease in the risk of child mortality - specifically we cannot reject the Null hypothesis that it has no relationship.
+	
+	The concordance measures the predictive accuracy of the model. It compares expected values against the observed values. The concordance of the model is 0.519, which is only marginally large than the 0.5 threshold. Below 0.5 the predictive power of the model is argued to perform similarly to random chance. This means the current model has a weak predictive power - which may be expected given the various influences on child mortality - particularly regarding healthcare facilities and disease.
+	
+	The likelihood ratio test (LRT) evaluates model fit, in this case it evaluates whether the introduction of these two variables improves the model fit. With a highly statistically significant finding, the predictors are argued to improve the fitness of model.
+	
+	\newpage
+	
+	\section*{Answer 2}
+	\vspace{.25cm}
+	
+	Because the amount of disaster aid received is conditioned by whether aid is receuved at all, there are likely to be censorship issues. It is not possible to know what effects the amount of disaster aid received if none is received at all. labelling such values as 0 is likely to skew the results through sample selection bias. Using a Heckmann model allows one account for this through two steps: the first is the probability of entering the sample (the probit selection model), the second uses this selection effect in the outcome equation, adjusted using the inverse Mills ratio to adjust for sample selection bias. Table 2 illustrates the probit selection model,  Table 3 illustrates the outcome model. However, given the name of predictors are not entirely clear, their meaning is inferred for the purposes of the problem set.
+	
+	
+	
+	\begin{table}[!htbp] \centering 
+		\caption{Selection Model} 
+		\label{} 
+		\begin{tabular}{@{\extracolsep{5pt}}lc} 
+			\\[-1.8ex]\hline 
+			\hline \\[-1.8ex] 
+			& \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+			\cline{2-2} 
+			\\[-1.8ex] & binContribution \\ 
+			& Disaster Relief Provision \\ 
+			\hline \\[-1.8ex] 
+			occurrences & 0.019$^{***}$ \\ 
+			& (0.002) \\ 
+			& \\ 
+			deathsEM & 0.011$^{***}$ \\ 
+			& (0.001) \\ 
+			& \\ 
+			normalizedDamageEMLogged & 0.021$^{***}$ \\ 
+			& (0.001) \\ 
+			& \\ 
+			Constant & $-$1.302$^{***}$ \\ 
+			& (0.018) \\ 
+			& \\ 
+			\hline \\[-1.8ex] 
+			Observations & 49,096 \\ 
+			R$^{2}$ & 0.055 \\ 
+			Adjusted R$^{2}$ & 0.053 \\ 
+			$\rho$ & $-$1.053 \\ 
+			Inverse Mills Ratio & $-$6.313$^{*}$  (3.420) \\ 
+			\hline 
+			\hline \\[-1.8ex] 
+			\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+		\end{tabular} 
+	\end{table} 
+	
+	Table two suggests that On average a unit increase in occurrences of disasters increases the probability of receiving aid by 0.019, holding all else constant. On average a unit increase in deaths  increases the probability of receiving aid by 0.011, holding all else constant. On average a unit increase in the logged damage done increases the probability of receiving aid by 0.021, holding all else constant. All predictors are statistically significant, rejecting the null that they have no association with selection. Using this, the outcome model is created.
+	
+	
+	
+	\begin{table}[!htbp] \centering 
+		\caption{Outcome Model} 
+		\label{} 
+		\begin{tabular}{@{\extracolsep{5pt}}lc} 
+			\\[-1.8ex]\hline 
+			\hline \\[-1.8ex] 
+			& \multicolumn{1}{c}{\textit{Dependent variable:}} \\ 
+			\cline{2-2} 
+			\\[-1.8ex] & originalContributionMillionUSDLogged \\ 
+			& Logged Contribution (in Million USD) \\ 
+			\hline \\[-1.8ex] 
+			occurrences & $-$0.086 \\ 
+			& (0.055) \\ 
+			& \\ 
+			deathsEM & $-$0.033 \\ 
+			& (0.026) \\ 
+			& \\ 
+			normalizedDamageEMLogged & $-$0.114$^{*}$ \\ 
+			& (0.062) \\ 
+			& \\ 
+			Constant & 9.766 \\ 
+			& (6.044) \\ 
+			& \\ 
+			\hline \\[-1.8ex] 
+			Observations & 49,096 \\ 
+			R$^{2}$ & 0.055 \\ 
+			Adjusted R$^{2}$ & 0.053 \\ 
+			$\rho$ & $-$1.053 \\ 
+			Inverse Mills Ratio & $-$6.313$^{*}$  (3.420) \\ 
+			\hline 
+			\hline \\[-1.8ex] 
+			\textit{Note:}  & \multicolumn{1}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+		\end{tabular} 
+	\end{table} 
+	Table 3 suggests that neither amount of deaths nor occurrences of disaster are statistically significant in their association with the logged contribution received - in fact they are negative. While the damage done by the disaster is marginally significant its p value is not less than 0.05 - thus it is not entirely significant.
+	The R-squared is very low at 0.055 - suggesting that other predictors may have a greater association with the amount of aid received once selected.
+	
+	
+	
+	
+	
+\end{document}
